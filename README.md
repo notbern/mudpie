@@ -159,5 +159,18 @@ Generates ready-to-distribute packages in `dist/`:
 
 ---
 
+## Contributing & Development Workflow
+
+Mudpie enforces a strict Pull Request workflow with automated containerized testing. Direct pushes to `main` are disabled.
+
+1. Create a feature or fix branch (`feature/*`, `fix/*`).
+2. Verify all tests and builds succeed locally (`make test` and `make build`).
+3. Submit a Pull Request targeting `main`.
+4. Ensure all GitHub Actions status checks (`build-and-test`) pass before merge.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines and branch governance details.
+
+---
+
 ## License
 GNU General Public License v3.0 (GPL-3.0-or-later). See `LICENSE` and RFC-MUDP-0001 for protocol specification.
