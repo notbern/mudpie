@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mudpie - Mastodon URL Discussions</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <img src="../icons/icon-32.png" alt="Mudpie" class="brand-logo" width="22" height="22">
+        <h1 class="brand-title">Mudpie</h1>
+        <span class="protocol-badge">MUDP</span>
+      </div>
+      <div class="header-actions">
+        <button id="refreshBtn" class="icon-btn" title="Refresh discussions" aria-label="Refresh">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+          </svg>
+        </button>
+        <button id="openOptionsBtn" class="icon-btn" title="Settings" aria-label="Settings">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Page Context Card -->
+    <section class="context-card">
+      <div class="context-title" id="pageTitle">Loading page details...</div>
+      <div class="context-url-row">
+        <span class="url-text" id="canonicalUrlDisplay" title="Canonical URL">-</span>
+        <button id="copyUrlBtn" class="small-action-btn" title="Copy URL">Copy</button>
+      </div>
+      <div class="context-meta-row">
+        <div class="identifier-tag" id="identifierBadge" title="Click to copy discussion tag">
+          <span class="tag-hash">#MUDP_...</span>
+        </div>
+        <div class="instance-select-wrapper">
+          <label for="instanceSelect" class="sr-only">Instance</label>
+          <select id="instanceSelect" class="instance-select" title="Selected Mastodon instance for discovery">
+            <option value="">No instance configured</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="tab-btn active" id="tabDiscussions" data-tab="discussions">
+        Discussions <span class="tab-badge" id="discussionsCount">0</span>
+      </button>
+      <button class="tab-btn" id="tabCompose" data-tab="compose">
+        New Post
+      </button>
+    </nav>
+
+    <!-- Tab 1: Discussions List -->
+    <main class="tab-pane active" id="paneDiscussions">
+      <div id="loadingIndicator" class="loading-state">
+        <div class="spinner"></div>
+        <span>Searching Mastodon for URL discussions...</span>
+      </div>
+
+      <div id="errorState" class="error-state hidden">
+        <div class="error-icon">⚠️</div>
+        <div class="error-message" id="errorMessage">Unable to fetch discussions.</div>
+        <button id="retryBtn" class="btn btn-secondary btn-sm">Try Again</button>
+      </div>
+
+      <div id="emptyState" class="empty-state hidden">
+        <div class="empty-icon">💬</div>
+        <h3>No discussions yet</h3>
+        <p>No posts found with this discussion identifier on <strong id="emptyInstanceName">-</strong>.</p>
+        <button id="startDiscussionBtn" class="btn btn-primary btn-sm">Start the Discussion</button>
+      </div>
+
+      <div id="postsList" class="posts-list"></div>
+    </main>
+
+    <!-- Tab 2: Compose Post -->
+    <section class="tab-pane hidden" id="paneCompose">
+      <form id="composeForm" class="compose-form">
+        <div class="form-group">
+          <label for="commentInput">Your Comment</label>
+          <textarea id="commentInput" rows="4" placeholder="What are your thoughts on this URL?" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="cwInput">Content Warning (optional)</label>
+          <input type="text" id="cwInput" placeholder="Spoiler / content warning">
+        </div>
+
+        <!-- Live MUDP Preview -->
+        <div class="preview-box">
+          <div class="preview-header">MUDP Post Preview</div>
+          <div class="preview-body" id="postPreviewText">...</div>
+        </div>
+
+        <div class="compose-actions">
+          <button type="submit" id="shareWebBtn" class="btn btn-primary">
+            Open Web Composer ↗
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <span class="footer-note">Mastodon URL Discussion Protocol v0.1.1</span>
+      <a href="https://github.com/notbern/mudpie" target="_blank" rel="noopener noreferrer" class="footer-link">RFC-MUDP-0001</a>
+    </footer>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="mudpie-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6364ff" />
+      <stop offset="100%" stop-color="#563acc" />
+    </linearGradient>
+    <linearGradient id="pie-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff9900" />
+      <stop offset="100%" stop-color="#e65100" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Background Circle / Chat Bubble -->
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="url(#mudpie-grad)" filter="url(#shadow)" />
+  
+  <!-- Mastodon-inspired M & Discussion Pie -->
+  <g fill="#ffffff">
+    <!-- Chat bubble notch -->
+    <path d="M 40 102 L 26 116 L 30 96 Z" fill="#563acc" />
+    
+    <!-- Central Hashtag / Discussion Symbol -->
+    <!-- Hashtag vertical bars -->
+    <rect x="46" y="34" width="8" height="60" rx="4" transform="skewX(-10)" />
+    <rect x="74" y="34" width="8" height="60" rx="4" transform="skewX(-10)" />
+    <!-- Hashtag horizontal bars -->
+    <rect x="30" y="48" width="68" height="8" rx="4" />
+    <rect x="30" y="72" width="68" height="8" rx="4" />
+    
+    <!-- URL link dot indicator (badge) -->
+    <circle cx="94" cy="34" r="14" fill="url(#pie-grad)" />
+    <circle cx="94" cy="34" r="6" fill="#ffffff" />
+  </g>
+</svg>

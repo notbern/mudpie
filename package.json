@@ -1,0 +1,22 @@
+{
+  "name": "mudpie",
+  "version": "0.1.1",
+  "description": "Mastodon URL Discussion Protocol (MUDP) - Firefox Extension, Browser Extensions, and Bookmarklets",
+  "main": "packages/core/src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "build": "node scripts/build.js"
+  },
+  "keywords": [
+    "mudp",
+    "mastodon",
+    "webextension",
+    "firefox-addon",
+    "activitypub",
+    "fediverse",
+    "discussions"
+  ],
+  "author": "Mudpie Contributors",
+  "license": "GPL-3.0-or-later"
+}

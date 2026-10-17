@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "Mudpie - Mastodon URL Discussions (MUDP)",
+  "short_name": "Mudpie",
+  "version": "0.1.1",
+  "description": "Discover and participate in Mastodon discussions about any web page using the MUDP protocol.",
+  "author": "Mudpie Contributors",
+  "homepage_url": "https://github.com/notbern/mudpie",
+  "icons": {
+    "16": "shared/icons/icon-16.png",
+    "32": "shared/icons/icon-32.png",
+    "48": "shared/icons/icon-48.png",
+    "96": "shared/icons/icon-96.png",
+    "128": "shared/icons/icon-128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "shared/icons/icon-16.png",
+      "32": "shared/icons/icon-32.png",
+      "48": "shared/icons/icon-48.png"
+    },
+    "default_title": "Mudpie (MUDP Discussions)",
+    "default_popup": "shared/popup/popup.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "shared/content/content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_ui": {
+    "page": "shared/options/options.html",
+    "open_in_tab": true
+  },
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "storage",
+    "contextMenus",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ]
+}
