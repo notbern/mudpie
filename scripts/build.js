@@ -118,6 +118,10 @@ function copyDirRecursive(src, dest) {
  * Creates an uncompressed or standard zip file from a directory.
  */
 function createZip(sourceDir, outPath) {
+  if (!fs.existsSync(sourceDir)) {
+    throw new Error(`Cannot package non-existent directory: ${sourceDir}`);
+  }
+
   // Pure JS simple ZIP archiver
   const files = [];
 
@@ -138,6 +142,10 @@ function createZip(sourceDir, outPath) {
   }
 
   collectFiles(sourceDir);
+
+  if (files.length === 0) {
+    throw new Error(`Cannot package empty directory: ${sourceDir}`);
+  }
 
   const localHeaders = [];
   const centralHeaders = [];
@@ -222,6 +230,193 @@ function createZip(sourceDir, outPath) {
   const zipBuffer = Buffer.concat([...localHeaders, ...centralHeaders, eocd]);
   fs.writeFileSync(outPath, zipBuffer);
   console.log(`Created zip: ${outPath} (${zipBuffer.length} bytes)`);
+
+  verifyPackage(outPath);
+}
+
+/**
+ * Validates the structure and content integrity of a packaged extension ZIP/XPI archive.
+ */
+export function verifyPackage(zipPath) {
+  if (!fs.existsSync(zipPath)) {
+    throw new Error(`Package verification failed: File not found at ${zipPath}`);
+  }
+  const buffer = fs.readFileSync(zipPath);
+  if (buffer.length < 22) {
+    throw new Error(`Package verification failed: File ${zipPath} is too small to be a valid ZIP archive`);
+  }
+
+  // Find End of Central Directory Record (EOCD) signature: 0x06054b50
+  let eocdOffset = -1;
+  for (let i = buffer.length - 22; i >= Math.max(0, buffer.length - 65535 - 22); i--) {
+    if (buffer.readUInt32LE(i) === 0x06054b50) {
+      eocdOffset = i;
+      break;
+    }
+  }
+
+  if (eocdOffset === -1) {
+    throw new Error(`Package verification failed: End of Central Directory record not found in ${zipPath}`);
+  }
+
+  const totalEntries = buffer.readUInt16LE(eocdOffset + 10);
+  const centralDirSize = buffer.readUInt32LE(eocdOffset + 12);
+  const centralDirOffset = buffer.readUInt32LE(eocdOffset + 16);
+
+  if (totalEntries === 0) {
+    throw new Error(`Package verification failed: Archive ${zipPath} contains 0 entries`);
+  }
+
+  const entries = new Map();
+  let currentOffset = centralDirOffset;
+
+  for (let i = 0; i < totalEntries; i++) {
+    if (currentOffset + 46 > buffer.length) {
+      throw new Error(`Package verification failed: Corrupt central directory header in ${zipPath}`);
+    }
+    const signature = buffer.readUInt32LE(currentOffset);
+    if (signature !== 0x02014b50) {
+      throw new Error(`Package verification failed: Invalid central directory signature at offset ${currentOffset} in ${zipPath}`);
+    }
+
+    const compSize = buffer.readUInt32LE(currentOffset + 20);
+    const uncompSize = buffer.readUInt32LE(currentOffset + 24);
+    const nameLen = buffer.readUInt16LE(currentOffset + 28);
+    const extraLen = buffer.readUInt16LE(currentOffset + 30);
+    const commentLen = buffer.readUInt16LE(currentOffset + 32);
+    const localHeaderOffset = buffer.readUInt32LE(currentOffset + 42);
+
+    const name = buffer.toString('utf8', currentOffset + 46, currentOffset + 46 + nameLen);
+    currentOffset += 46 + nameLen + extraLen + commentLen;
+
+    // Check local header
+    if (localHeaderOffset + 30 > buffer.length) {
+      throw new Error(`Package verification failed: Invalid local header offset ${localHeaderOffset} for ${name} in ${zipPath}`);
+    }
+    const localSig = buffer.readUInt32LE(localHeaderOffset);
+    if (localSig !== 0x04034b50) {
+      throw new Error(`Package verification failed: Invalid local header signature for entry ${name} in ${zipPath}`);
+    }
+
+    const localNameLen = buffer.readUInt16LE(localHeaderOffset + 26);
+    const localExtraLen = buffer.readUInt16LE(localHeaderOffset + 28);
+    const localName = buffer.toString('utf8', localHeaderOffset + 30, localHeaderOffset + 30 + localNameLen);
+
+    if (localName !== name) {
+      throw new Error(`Package verification failed: Name mismatch between central dir and local header (${name} vs ${localName}) in ${zipPath}`);
+    }
+
+    const dataStart = localHeaderOffset + 30 + localNameLen + localExtraLen;
+    const fileData = buffer.subarray(dataStart, dataStart + compSize);
+
+    entries.set(name, fileData);
+  }
+
+  // Validate manifest.json
+  if (!entries.has('manifest.json')) {
+    throw new Error(`Package verification failed: manifest.json missing from ${zipPath}`);
+  }
+
+  let manifest;
+  try {
+    manifest = JSON.parse(entries.get('manifest.json').toString('utf8'));
+  } catch (err) {
+    throw new Error(`Package verification failed: Invalid manifest.json JSON in ${zipPath}: ${err.message}`);
+  }
+
+  if (!manifest.manifest_version || !manifest.name || !manifest.version) {
+    throw new Error(`Package verification failed: manifest.json is missing required fields in ${zipPath}`);
+  }
+
+  // Check icons
+  if (manifest.icons) {
+    for (const [size, iconPath] of Object.entries(manifest.icons)) {
+      if (!entries.has(iconPath)) {
+        throw new Error(`Package verification failed: Referenced icon ${iconPath} missing in ${zipPath}`);
+      }
+    }
+  }
+
+  // Check action / browser_action icons and popup
+  const action = manifest.action || manifest.browser_action;
+  if (action) {
+    if (action.default_icon) {
+      if (typeof action.default_icon === 'string') {
+        if (!entries.has(action.default_icon)) {
+          throw new Error(`Package verification failed: Referenced default_icon ${action.default_icon} missing in ${zipPath}`);
+        }
+      } else if (typeof action.default_icon === 'object') {
+        for (const [size, iconPath] of Object.entries(action.default_icon)) {
+          if (!entries.has(iconPath)) {
+            throw new Error(`Package verification failed: Referenced action icon ${iconPath} missing in ${zipPath}`);
+          }
+        }
+      }
+    }
+    if (action.default_popup && !entries.has(action.default_popup)) {
+      throw new Error(`Package verification failed: Referenced popup ${action.default_popup} missing in ${zipPath}`);
+    }
+  }
+
+  // Check background scripts / service worker
+  if (manifest.background) {
+    if (manifest.background.service_worker && !entries.has(manifest.background.service_worker)) {
+      throw new Error(`Package verification failed: Referenced background service worker ${manifest.background.service_worker} missing in ${zipPath}`);
+    }
+    if (manifest.background.scripts) {
+      for (const scriptPath of manifest.background.scripts) {
+        if (!entries.has(scriptPath)) {
+          throw new Error(`Package verification failed: Referenced background script ${scriptPath} missing in ${zipPath}`);
+        }
+      }
+    }
+  }
+
+  // Check content scripts
+  if (manifest.content_scripts) {
+    for (const cs of manifest.content_scripts) {
+      if (cs.js) {
+        for (const jsPath of cs.js) {
+          if (!entries.has(jsPath)) {
+            throw new Error(`Package verification failed: Referenced content script ${jsPath} missing in ${zipPath}`);
+          }
+        }
+      }
+    }
+  }
+
+  // Check options UI
+  if (manifest.options_ui && manifest.options_ui.page) {
+    if (!entries.has(manifest.options_ui.page)) {
+      throw new Error(`Package verification failed: Referenced options page ${manifest.options_ui.page} missing in ${zipPath}`);
+    }
+  }
+
+  // Check that no JS files have escaping relative imports (e.g. ../../../core or ../../core from root)
+  for (const [entryName, data] of entries.entries()) {
+    if (entryName.endsWith('.js')) {
+      const code = data.toString('utf8');
+      const depth = entryName.split('/').length - 1; // 0 for root, 1 for shared/xyz.js, 2 for shared/popup/popup.js
+      const importMatches = code.matchAll(/(?:import|export)\s+(?:[\s\S]*?from\s+)?['"](\.[^'"]+)['"]/g);
+      for (const match of importMatches) {
+        const importPath = match[1];
+        const segments = importPath.split('/');
+        let upCount = 0;
+        for (const seg of segments) {
+          if (seg === '..') {
+            upCount++;
+          } else if (seg !== '.') {
+            break;
+          }
+        }
+        if (upCount > depth) {
+          throw new Error(`Package verification failed: Import path "${importPath}" in ${entryName} escapes package root in ${zipPath}`);
+        }
+      }
+    }
+  }
+
+  return true;
 }
 
 function buildFirefoxExtension() {
@@ -332,7 +527,12 @@ export function buildAll(options = {}) {
 export { buildFirefoxExtension, buildChromeExtension, buildBookmarklets };
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
-  console.log('Starting Mudpie Build...');
-  buildAll();
-  console.log('Build completed successfully.');
+  try {
+    console.log('Starting Mudpie Build...');
+    buildAll();
+    console.log('Build completed successfully.');
+  } catch (err) {
+    console.error('Build failed with error:', err.message || err);
+    process.exit(1);
+  }
 }

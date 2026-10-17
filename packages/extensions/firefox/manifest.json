@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Mudpie - Mastodon URL Discussions (MUDP)",
   "short_name": "Mudpie",
   "version": "0.1.1",
@@ -13,7 +13,7 @@
     "96": "shared/icons/icon-96.png",
     "128": "shared/icons/icon-128.png"
   },
-  "browser_action": {
+  "action": {
     "default_icon": {
       "16": "shared/icons/icon-16.png",
       "32": "shared/icons/icon-32.png",
@@ -47,14 +47,21 @@
     "activeTab",
     "tabs",
     "storage",
-    "contextMenus",
+    "contextMenus"
+  ],
+  "host_permissions": [
     "https://*/*",
     "http://*/*"
   ],
   "browser_specific_settings": {
     "gecko": {
-      "id": "norbert.lauert+mudpie@gmail.com",
-      "strict_min_version": "109.0"
+      "id": "norbert.lauert@gmail.com",
+      "strict_min_version": "109.0",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
     }
   }
 }

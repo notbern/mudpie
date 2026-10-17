@@ -1,6 +1,6 @@
 {
   "name": "mudpie",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Mastodon URL Discussion Protocol (MUDP) - Firefox Extension, Browser Extensions, and Bookmarklets",
   "main": "packages/core/src/index.js",
   "type": "module",

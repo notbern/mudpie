@@ -4,10 +4,10 @@
  * Note: Auto-fetching in the background is strictly prohibited (MUST NOT) to minimize server load.
  */
 
-import { generateDiscussionIdentifier } from '../../core/src/identifier.js';
-import { normalizeUrl } from '../../core/src/url.js';
-import { createShareIntentUrl } from '../../core/src/mastodon.js';
-import { getSettings } from '../../core/src/storage.js';
+import { generateDiscussionIdentifier } from './core/src/identifier.js';
+import { normalizeUrl } from './core/src/url.js';
+import { createShareIntentUrl } from './core/src/mastodon.js';
+import { getSettings } from './core/src/storage.js';
 
 // Create Context Menus
 if (chrome.contextMenus) {

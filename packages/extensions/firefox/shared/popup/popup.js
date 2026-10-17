@@ -2,11 +2,11 @@
  * Mastodon URL Discussion Protocol (MUDP) - Extension Popup Controller
  */
 
-import { normalizeUrl, getCanonicalUrl } from '../../../core/src/url.js';
-import { generateDiscussionIdentifier, getDiscussionHashtag } from '../../../core/src/identifier.js';
-import { formatMudpPost } from '../../../core/src/post.js';
-import { fetchDiscussion, createShareIntentUrl, normalizeInstance } from '../../../core/src/mastodon.js';
-import { getSettings, saveSettings } from '../../../core/src/storage.js';
+import { normalizeUrl, getCanonicalUrl } from '../../core/src/url.js';
+import { generateDiscussionIdentifier, getDiscussionHashtag } from '../../core/src/identifier.js';
+import { formatMudpPost } from '../../core/src/post.js';
+import { fetchDiscussion, createShareIntentUrl, normalizeInstance } from '../../core/src/mastodon.js';
+import { getSettings, saveSettings } from '../../core/src/storage.js';
 
 // DOM Elements
 const pageTitleEl = document.getElementById('pageTitle');

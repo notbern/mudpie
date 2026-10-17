@@ -2,8 +2,8 @@
  * Mastodon URL Discussion Protocol (MUDP) - Options Controller
  */
 
-import { getSettings, saveSettings, DEFAULT_SETTINGS } from '../../../core/src/storage.js';
-import { normalizeInstance } from '../../../core/src/mastodon.js';
+import { getSettings, saveSettings, DEFAULT_SETTINGS } from '../../core/src/storage.js';
+import { normalizeInstance } from '../../core/src/mastodon.js';
 
 const defaultInstanceEl = document.getElementById('defaultInstance');
 const knownInstancesInputEl = document.getElementById('knownInstancesInput');
