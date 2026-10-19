@@ -94,6 +94,12 @@ make build
 # Run test suite inside Podman container
 make test
 
+# Sync existing package.json version across manifests and templates
+make sync-versions
+
+# Bump version or set explicit version across all project files
+make version VERSION=patch     # or minor / major / 0.2.0
+
 # Build Podman container image only
 make image
 
