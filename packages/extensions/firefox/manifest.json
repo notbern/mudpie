@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Mudpie - Mastodon URL Discussions (MUDP)",
   "short_name": "Mudpie",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "description": "Discover and participate in Mastodon discussions about any web page using the MUDP protocol.",
   "author": "Mudpie Contributors",
   "homepage_url": "https://github.com/notbern/mudpie",
@@ -56,7 +56,7 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "norbert.lauert@gmail.com",
-      "strict_min_version": "109.0",
+      "strict_min_version": "142.0",
       "data_collection_permissions": {
         "required": [
           "none"

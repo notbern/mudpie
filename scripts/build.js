@@ -28,11 +28,43 @@ export function getVersion(rootDir = ROOT_DIR) {
  * Synchronizes the project version across manifests, templates, and documentation.
  */
 export function syncVersions(version = null, rootDir = ROOT_DIR) {
-  const resolvedVersion = version || getVersion(rootDir);
+  const pkgPath = path.join(rootDir, 'package.json');
+  const currentVersion = getVersion(rootDir);
+  let resolvedVersion = version;
+
+  if (!resolvedVersion) {
+    resolvedVersion = currentVersion;
+  } else if (resolvedVersion === 'patch' || resolvedVersion === 'minor' || resolvedVersion === 'major') {
+    const parts = currentVersion.split('.').map(Number);
+    if (parts.length === 3 && parts.every(n => !isNaN(n))) {
+      if (resolvedVersion === 'major') {
+        resolvedVersion = `${parts[0] + 1}.0.0`;
+      } else if (resolvedVersion === 'minor') {
+        resolvedVersion = `${parts[0]}.${parts[1] + 1}.0`;
+      } else if (resolvedVersion === 'patch') {
+        resolvedVersion = `${parts[0]}.${parts[1]}.${parts[2] + 1}`;
+      }
+    }
+  } else if (typeof resolvedVersion === 'string' && resolvedVersion.startsWith('v')) {
+    resolvedVersion = resolvedVersion.slice(1);
+  }
+
+  if (fs.existsSync(pkgPath)) {
+    try {
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+      if (pkg.version !== resolvedVersion) {
+        pkg.version = resolvedVersion;
+        fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+        console.log(`  Updated ${path.relative(rootDir, pkgPath)} to v${resolvedVersion}`);
+      }
+    } catch (e) {
+      console.error(`  Error parsing package.json at ${pkgPath}:`, e);
+    }
+  }
+
   const packagesDir = path.join(rootDir, 'packages');
   const extensionsDir = path.join(packagesDir, 'extensions');
   const distDir = path.join(rootDir, 'dist');
-  const rfcPath = path.join(rootDir, 'RFC.md');
 
   console.log(`Syncing version ${resolvedVersion} across project files...`);
 
@@ -82,16 +114,6 @@ export function syncVersions(version = null, rootDir = ROOT_DIR) {
   // Walk dist directory if it exists
   if (fs.existsSync(distDir)) {
     walkAndUpdate(distDir);
-  }
-
-  // Update RFC.md
-  if (fs.existsSync(rfcPath)) {
-    const content = fs.readFileSync(rfcPath, 'utf8');
-    const updated = content.replace(/^(\*\*Version:\*\*\s*)[0-9a-zA-Z.-]+(.*)$/m, `$1${resolvedVersion}$2`);
-    if (updated !== content) {
-      fs.writeFileSync(rfcPath, updated);
-      console.log(`  Updated RFC.md to v${resolvedVersion}`);
-    }
   }
 
   return resolvedVersion;
@@ -517,7 +539,9 @@ ${shareBookmarklet}
 export function buildAll(options = {}) {
   const rootDir = options.rootDir || ROOT_DIR;
   const version = options.version || getVersion(rootDir);
-  syncVersions(version, rootDir);
+  if (options.sync) {
+    syncVersions(version, rootDir);
+  }
   fs.mkdirSync(DIST_DIR, { recursive: true });
   buildFirefoxExtension();
   buildChromeExtension();
@@ -528,9 +552,19 @@ export { buildFirefoxExtension, buildChromeExtension, buildBookmarklets };
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   try {
-    console.log('Starting Mudpie Build...');
-    buildAll();
-    console.log('Build completed successfully.');
+    const args = process.argv.slice(2);
+    const syncArgIndex = args.findIndex(a => a === '--sync-versions' || a === '--sync' || a === '-s');
+    if (syncArgIndex !== -1) {
+      const remainingArgs = args.filter((_, idx) => idx !== syncArgIndex);
+      const targetVersion = remainingArgs.find(a => !a.startsWith('-')) || null;
+      console.log('Syncing versions across project files...');
+      syncVersions(targetVersion);
+      console.log('Version synchronization completed successfully.');
+    } else {
+      console.log('Starting Mudpie Build...');
+      buildAll();
+      console.log('Build completed successfully.');
+    }
   } catch (err) {
     console.error('Build failed with error:', err.message || err);
     process.exit(1);
