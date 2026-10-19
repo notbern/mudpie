@@ -7,6 +7,10 @@ import { getVersion, syncVersions } from '../scripts/build.js';
 
 const ROOT_DIR = process.cwd();
 
+function escapeRegExp(value) {
+  return value.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
+}
+
 test('Version Management - getVersion returns version from package.json', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'package.json'), 'utf8'));
   const version = getVersion(ROOT_DIR);
@@ -30,38 +34,38 @@ test('Version Management - All project files match package.json version', () => 
     path.join(ROOT_DIR, 'packages', 'extensions', 'shared', 'options', 'options.html'),
     'utf8'
   );
-  assert.match(sharedOptionsHtml, new RegExp(`Mudpie Browser Extension v${version.replace(/\./g, '\\.')}`));
+  assert.match(sharedOptionsHtml, new RegExp(`Mudpie Browser Extension v${escapeRegExp(version)}`));
 
   const sharedPopupHtml = fs.readFileSync(
     path.join(ROOT_DIR, 'packages', 'extensions', 'shared', 'popup', 'popup.html'),
     'utf8'
   );
-  assert.match(sharedPopupHtml, new RegExp(`v${version.replace(/\./g, '\\.')}`));
+  assert.match(sharedPopupHtml, new RegExp(`v${escapeRegExp(version)}`));
 
   // Check Chrome copy of shared files if present
   const chromeOptionsPath = path.join(ROOT_DIR, 'packages', 'extensions', 'chrome', 'shared', 'options', 'options.html');
   if (fs.existsSync(chromeOptionsPath)) {
     const chromeOptionsHtml = fs.readFileSync(chromeOptionsPath, 'utf8');
-    assert.match(chromeOptionsHtml, new RegExp(`Mudpie Browser Extension v${version.replace(/\./g, '\\.')}`));
+    assert.match(chromeOptionsHtml, new RegExp(`Mudpie Browser Extension v${escapeRegExp(version)}`));
   }
 
   const chromePopupPath = path.join(ROOT_DIR, 'packages', 'extensions', 'chrome', 'shared', 'popup', 'popup.html');
   if (fs.existsSync(chromePopupPath)) {
     const chromePopupHtml = fs.readFileSync(chromePopupPath, 'utf8');
-    assert.match(chromePopupHtml, new RegExp(`v${version.replace(/\./g, '\\.')}`));
+    assert.match(chromePopupHtml, new RegExp(`v${escapeRegExp(version)}`));
   }
 
   // Check Firefox copy of shared files if present
   const firefoxOptionsPath = path.join(ROOT_DIR, 'packages', 'extensions', 'firefox', 'shared', 'options', 'options.html');
   if (fs.existsSync(firefoxOptionsPath)) {
     const firefoxOptionsHtml = fs.readFileSync(firefoxOptionsPath, 'utf8');
-    assert.match(firefoxOptionsHtml, new RegExp(`Mudpie Browser Extension v${version.replace(/\./g, '\\.')}`));
+    assert.match(firefoxOptionsHtml, new RegExp(`Mudpie Browser Extension v${escapeRegExp(version)}`));
   }
 
   const firefoxPopupPath = path.join(ROOT_DIR, 'packages', 'extensions', 'firefox', 'shared', 'popup', 'popup.html');
   if (fs.existsSync(firefoxPopupPath)) {
     const firefoxPopupHtml = fs.readFileSync(firefoxPopupPath, 'utf8');
-    assert.match(firefoxPopupHtml, new RegExp(`v${version.replace(/\./g, '\\.')}`));
+    assert.match(firefoxPopupHtml, new RegExp(`v${escapeRegExp(version)}`));
   }
 });
 
@@ -106,22 +110,22 @@ test('Version Management - syncVersions propagates new version across all files 
     assert.strictEqual(updatedFirefox.version, testVersion);
 
     const updatedSharedOpt = fs.readFileSync(path.join(sharedDir, 'options', 'options.html'), 'utf8');
-    assert.match(updatedSharedOpt, new RegExp(`Mudpie Browser Extension v${testVersion.replace(/\./g, '\\.')}`));
+    assert.match(updatedSharedOpt, new RegExp(`Mudpie Browser Extension v${escapeRegExp(testVersion)}`));
 
     const updatedSharedPop = fs.readFileSync(path.join(sharedDir, 'popup', 'popup.html'), 'utf8');
-    assert.match(updatedSharedPop, new RegExp(`v${testVersion.replace(/\./g, '\\.')}`));
+    assert.match(updatedSharedPop, new RegExp(`v${escapeRegExp(testVersion)}`));
 
     const updatedChromeOpt = fs.readFileSync(path.join(chromeSharedDir, 'options', 'options.html'), 'utf8');
-    assert.match(updatedChromeOpt, new RegExp(`Mudpie Browser Extension v${testVersion.replace(/\./g, '\\.')}`));
+    assert.match(updatedChromeOpt, new RegExp(`Mudpie Browser Extension v${escapeRegExp(testVersion)}`));
 
     const updatedChromePop = fs.readFileSync(path.join(chromeSharedDir, 'popup', 'popup.html'), 'utf8');
-    assert.match(updatedChromePop, new RegExp(`v${testVersion.replace(/\./g, '\\.')}`));
+    assert.match(updatedChromePop, new RegExp(`v${escapeRegExp(testVersion)}`));
 
     const updatedFirefoxOpt = fs.readFileSync(path.join(firefoxSharedDir, 'options', 'options.html'), 'utf8');
-    assert.match(updatedFirefoxOpt, new RegExp(`Mudpie Browser Extension v${testVersion.replace(/\./g, '\\.')}`));
+    assert.match(updatedFirefoxOpt, new RegExp(`Mudpie Browser Extension v${escapeRegExp(testVersion)}`));
 
     const updatedFirefoxPop = fs.readFileSync(path.join(firefoxSharedDir, 'popup', 'popup.html'), 'utf8');
-    assert.match(updatedFirefoxPop, new RegExp(`v${testVersion.replace(/\./g, '\\.')}`));
+    assert.match(updatedFirefoxPop, new RegExp(`v${escapeRegExp(testVersion)}`));
 
     // RFC.md must remain unchanged as RFC versioning is independent from implementation versioning
     const updatedRfc = fs.readFileSync(path.join(tempDir, 'RFC.md'), 'utf8');
