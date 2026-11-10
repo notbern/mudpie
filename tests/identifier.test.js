@@ -8,17 +8,25 @@ import {
   PROTOCOL_HASHTAG,
   PROTOCOL_PREFIX,
   IDENTIFIER_LENGTH,
+  IDENTIFIER_REGEX,
+  LEGACY_IDENTIFIER_REGEX,
   sha256Hex,
   sha256Base64Url,
   bytesToBase64Url
 } from '../packages/core/src/identifier.js';
 
-test('bytesToBase64Url - encodes bytes into URL-safe unpadded Base64', () => {
+test('bytesToBase64Url - encodes bytes into hashtag-safe unpadded Base64 without hyphens', () => {
   const sampleBytes = [0x3a, 0xf1, 0x82, 0xc9, 0x4e, 0x01, 0x7d, 0xbb, 0x1a];
   assert.strictEqual(bytesToBase64Url(sampleBytes), 'OvGCyU4Bfbsa');
+
+  // Verify byte producing index 62 encodes to '_' instead of '-'
+  const index62Bytes = [0b11111000, 0x00, 0x00];
+  const encoded62 = bytesToBase64Url(index62Bytes);
+  assert.strictEqual(encoded62.startsWith('_'), true);
+  assert.strictEqual(encoded62.includes('-'), false);
 });
 
-test('SHA-256 computation produces valid 64-character hex and Base64URL', async () => {
+test('SHA-256 computation produces valid 64-character hex and hashtag-safe Base64', async () => {
   const hex = await sha256Hex('https://example.org/article');
   assert.strictEqual(hex.length, 64);
   assert.match(hex, /^[0-9a-f]{64}$/);
@@ -28,7 +36,7 @@ test('SHA-256 computation produces valid 64-character hex and Base64URL', async 
   assert.strictEqual(b64, '2gcm_O6eB2sV');
 });
 
-test('Discussion identifier generation - 72-bit Base64URL with MUDP_ prefix', async () => {
+test('Discussion identifier generation - 72-bit hashtag-safe Base64 with MUDP_ prefix', async () => {
   const hash = await generateDiscussionHash('https://example.org/article');
   assert.strictEqual(hash.length, 12);
   assert.strictEqual(hash, '2gcm_O6eB2sV');
@@ -38,6 +46,7 @@ test('Discussion identifier generation - 72-bit Base64URL with MUDP_ prefix', as
   assert.strictEqual(identifier.startsWith('MUDP_'), true);
   assert.strictEqual(identifier.length, 17); // 'MUDP_' (5) + 12 = 17
   assert.strictEqual(IDENTIFIER_LENGTH, 12);
+  assert.match(identifier, IDENTIFIER_REGEX);
 });
 
 test('Discussion identifier normalization and HTTP/HTTPS equivalence', async () => {
@@ -60,11 +69,24 @@ test('Hashtag formatting', async () => {
   assert.strictEqual(getDiscussionHashtag(`#MUDP_${hash}`), `#MUDP_${hash}`);
 });
 
-test('parseDiscussionIdentifier', () => {
+test('parseDiscussionIdentifier - supports both modern and legacy hashtag formats', () => {
   const hash = '2gcm_O6eB2sV';
   assert.strictEqual(parseDiscussionIdentifier(`MUDP_${hash}`), hash);
   assert.strictEqual(parseDiscussionIdentifier(`#MUDP_${hash}`), hash);
   assert.strictEqual(parseDiscussionIdentifier(`mudp_${hash}`), hash);
+
+  // Backwards compatibility with legacy '-' in hashtags
+  const legacyHash = '6FuCdB-oHG8I';
+  const modernHash = '6FuCdB_oHG8I';
+  assert.strictEqual(parseDiscussionIdentifier(`MUDP_${legacyHash}`), legacyHash);
+  assert.strictEqual(parseDiscussionIdentifier(`#MUDP_${legacyHash}`), legacyHash);
+  assert.strictEqual(parseDiscussionIdentifier(`MUDP_${modernHash}`), modernHash);
+  assert.strictEqual(parseDiscussionIdentifier(`#MUDP_${modernHash}`), modernHash);
+
+  assert.strictEqual(IDENTIFIER_REGEX.test(`MUDP_${modernHash}`), true);
+  assert.strictEqual(IDENTIFIER_REGEX.test(`MUDP_${legacyHash}`), false);
+  assert.strictEqual(LEGACY_IDENTIFIER_REGEX.test(`MUDP_${legacyHash}`), true);
+
   assert.strictEqual(parseDiscussionIdentifier('invalid_identifier'), null);
   assert.strictEqual(parseDiscussionIdentifier('MUDP_123'), null); // too short
   assert.strictEqual(parseDiscussionIdentifier('MUDP_9eba6b3c57ce169e19742b249a7f7542a620751a5c4b2f2c4990684f7e655f70'), null); // old 64-hex format is invalid

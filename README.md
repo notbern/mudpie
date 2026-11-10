@@ -1,10 +1,10 @@
 # Mudpie: Mastodon URL Discussion Protocol (MUDP)
 
-Mudpie is an open-source browser extension and toolkit implementing **RFC-MUDP-0001 (Mastodon URL Discussion Protocol)**.
+Mudpie is an open-source browser extension and toolkit implementing **RFC-MUDP-0002 (Mastodon URL Discussion Protocol)**.
 
 MUDP associates Mastodon posts with arbitrary web resources using deterministic URL hashing and Mastodon's native hashtag indexing. This allows users to discover and participate in decentralized discussions for any webpage without requiring website operator opt-in, ActivityPub server changes, or centralized databases.
 
-This implementation is generated using LLMs based on [RFC-MUDP-0001](RFC.md).
+This implementation is generated using LLMs based on [RFC-MUDP-0002](RFC.md).
 
 ---
 
@@ -56,7 +56,7 @@ mudpie/
 │   └── generate-icons.js        # Raster icon generator
 │
 ├── dist/                        # Packaged release archives (.zip / .xpi)
-├── RFC.md                       # RFC-MUDP-0001 Specification
+├── RFC.md                       # RFC-MUDP-0002 Specification
 └── package.json
 ```
 
@@ -129,7 +129,7 @@ Generates ready-to-distribute packages in `dist/`:
 
 ---
 
-## Protocol Overview (RFC-MUDP-0001)
+## Protocol Overview (RFC-MUDP-0002)
 
 1. **URL Normalization (Section 5):**
    - Protocol scheme (`http://`, `https://`, etc.) and leading `//` stripped.
@@ -143,7 +143,7 @@ Generates ready-to-distribute packages in `dist/`:
 
 2. **Discussion Identifier (Section 6 & 7):**
    - Normalized URL string (without protocol scheme) is hashed with SHA-256.
-   - The first 9 bytes (72 bits) are extracted and encoded using URL-safe Base64 without padding (12 characters): `MUDP_${base64url}` (e.g. `MUDP_2gcm_O6eB2sV`).
+   - The first 9 bytes (72 bits) are extracted and encoded using hashtag-safe Base64 without padding (12 characters, mapping `-` to `_` so tags are valid clickable hashtags in Mastodon): `MUDP_${hash}` (e.g. `MUDP_2gcm_O6eB2sV`).
    - Hashtag format: `#MUDP` and `#MUDP_2gcm_O6eB2sV`.
 
 3. **Post Format (Section 8):**
@@ -179,4 +179,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines and branch governance
 ---
 
 ## License
-GNU General Public License v3.0 (GPL-3.0-or-later). See `LICENSE` and RFC-MUDP-0001 for protocol specification.
+GNU General Public License v3.0 (GPL-3.0-or-later). See `LICENSE` and RFC-MUDP-0002 for protocol specification.

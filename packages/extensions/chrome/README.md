@@ -1,6 +1,6 @@
 # Mudpie for Chrome / Chromium
 
-Manifest V3 browser extension for Google Chrome, Brave, Edge, and other Chromium-based browsers implementing the Mastodon URL Discussion Protocol (RFC-MUDP-0001).
+Manifest V3 browser extension for Google Chrome, Brave, Edge, and other Chromium-based browsers implementing the Mastodon URL Discussion Protocol (RFC-MUDP-0002).
 
 ## Features
 - Discovers Mastodon discussions using `#MUDP_${hash12}` tags strictly on demand.

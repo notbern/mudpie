@@ -1,6 +1,6 @@
 # Mudpie for Firefox
 
-Firefox WebExtension implementing the Mastodon URL Discussion Protocol (RFC-MUDP-0001).
+Firefox WebExtension implementing the Mastodon URL Discussion Protocol (RFC-MUDP-0002).
 
 ## Loading in Firefox
 

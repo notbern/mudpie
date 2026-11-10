@@ -50,7 +50,7 @@ Before submitting a pull request, ensure `make test` and `make build` succeed lo
 ## Submitting a Pull Request
 
 1. **Fork & Branch:** Create a branch from the latest `main` commit.
-2. **Implement Changes:** Write clean, modular code adhering to existing project conventions and [RFC-MUDP-0001](RFC.md).
+2. **Implement Changes:** Write clean, modular code adhering to existing project conventions and [RFC-MUDP-0002](RFC.md).
 3. **Add / Update Tests:** Add test cases in `tests/*.test.js` for new logic or bug fixes.
 4. **Validate Locally:** Verify all tests pass with `make test`.
 5. **Open Pull Request:** Open a pull request targeting `main`. Fill out all sections of the [Pull Request Template](.github/pull_request_template.md).
@@ -60,7 +60,7 @@ Before submitting a pull request, ensure `make test` and `make build` succeed lo
 
 ## Code Style & Guidelines
 
-- **Protocol Conformance:** Ensure all core URL normalization, hashing, and post builder logic strictly conforms to RFC-MUDP-0001.
+- **Protocol Conformance:** Ensure all core URL normalization, hashing, and post builder logic strictly conforms to RFC-MUDP-0002.
 - **Modern JavaScript:** Use standard ES Modules (`import`/`export`) without external build-step transpilers where possible.
 - **Test Coverage:** All core protocol functions must have unit test coverage using Node's native test runner (`node:test`).
 - **No Background Fetching:** Extension contributions must honor RFC Section 11 (strict prohibition of auto-fetching / polling without explicit user interaction).

@@ -55,7 +55,7 @@
     }
   }
 
-  const BASE64URL_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+  const BASE64URL_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789__';
   function bytesToBase64Url(bytes) {
     let result = '';
     const len = bytes.length;

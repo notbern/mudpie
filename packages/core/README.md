@@ -1,6 +1,6 @@
 # @mudpie/core
 
-Shared core library implementing the Mastodon URL Discussion Protocol (RFC-MUDP-0001).
+Shared core library implementing the Mastodon URL Discussion Protocol (RFC-MUDP-0002).
 
 ## Modules
 

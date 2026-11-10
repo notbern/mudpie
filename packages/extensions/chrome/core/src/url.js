@@ -1,6 +1,6 @@
 /**
  * Mastodon URL Discussion Protocol (MUDP) - URL Normalization Module
- * Implements RFC-MUDP-0001 Section 5 (URL Normalization)
+ * Implements RFC-MUDP-0002 Section 5 (URL Normalization)
  */
 
 /**
@@ -34,7 +34,7 @@ export const TRACKING_PARAMS = new Set([
 ]);
 
 /**
- * Normalizes a URL string per RFC-MUDP-0001 Section 5.
+ * Normalizes a URL string per RFC-MUDP-0002 Section 5.
  *
  * Transformations applied in order:
  * 1. Protocol / Scheme: Strip protocol scheme (http://, https://, etc.) and leading double slashes (//).

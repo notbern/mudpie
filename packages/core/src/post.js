@@ -1,6 +1,6 @@
 /**
  * Mastodon URL Discussion Protocol (MUDP) - Post Formatting and Validation
- * Implements RFC-MUDP-0001 Section 8 (Post Format) & Section 13 (Collision Handling)
+ * Implements RFC-MUDP-0002 Section 8 (Post Format) & Section 13 (Collision Handling)
  */
 
 import { PROTOCOL_HASHTAG, getDiscussionHashtag, generateDiscussionIdentifier, parseDiscussionIdentifier } from './identifier.js';
@@ -119,7 +119,8 @@ export function parseAndVerifyMudpPost(status, expectedIdentifier = null) {
   let matchesIdentifier = true;
   if (expectedIdentifier) {
     const cleanExpected = expectedIdentifier.replace(/^#/, '');
-    matchesIdentifier = foundIdentifier.toLowerCase() === cleanExpected.toLowerCase();
+    matchesIdentifier = foundIdentifier.toLowerCase() === cleanExpected.toLowerCase() ||
+      foundIdentifier.toLowerCase().replace(/-/g, '_') === cleanExpected.toLowerCase().replace(/-/g, '_');
   }
 
   // Extract user comment part (strip URL and hashtags)

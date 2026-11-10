@@ -36,7 +36,7 @@ test('createShareIntentUrl - generates valid web share intent link', async () =>
   assert.match(queryText, /Great post!/);
   assert.match(queryText, /https:\/\/example\.org\/article/);
   assert.match(queryText, /#MUDP/);
-  assert.match(queryText, /#MUDP_[A-Za-z0-9_-]{12}/);
+  assert.match(queryText, /#MUDP_[A-Za-z0-9_]{12}/);
 
   await assert.rejects(
     async () => createShareIntentUrl({ url, text, instance: '' }),

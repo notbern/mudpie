@@ -24,7 +24,7 @@ test('formatMudpPost - formats post without extra comment text preserving unnorm
   const url = 'https://example.org/article';
   const post = await formatMudpPost({ url });
   
-  assert.match(post, /^https:\/\/example\.org\/article\n\n#MUDP\n#MUDP_[A-Za-z0-9_-]{12}$/);
+  assert.match(post, /^https:\/\/example\.org\/article\n\n#MUDP\n#MUDP_[A-Za-z0-9_]{12}$/);
 });
 
 test('stripHtml - removes html tags and converts line breaks', () => {
@@ -68,6 +68,28 @@ test('parseAndVerifyMudpPost - verifies status containing normalized / schemeles
   assert.strictEqual(verification.discussionIdentifier, identifier);
   assert.strictEqual(verification.url, 'example.org/article');
   assert.strictEqual(verification.userComment, 'Interesting thoughts on');
+});
+
+test('parseAndVerifyMudpPost - verifies legacy status with hyphenated discussion tag', () => {
+  const legacyIdentifier = 'MUDP_6FuCdB-oHG8I';
+  const modernExpected = 'MUDP_6FuCdB_oHG8I';
+  const url = 'https://example.org/news/sample';
+
+  // In Mastodon, tags might be truncated at '-' in status.tags metadata (or missing), but present in content
+  const mockStatus = {
+    id: '789101',
+    content: `<p>A comment on <a href="${url}">${url}</a> <br>#MUDP #${legacyIdentifier}</p>`,
+    tags: [
+      { name: 'MUDP' },
+      { name: 'MUDP_6FuCdB' } // truncated tag from Mastodon's parser
+    ]
+  };
+
+  const verification = parseAndVerifyMudpPost(mockStatus, modernExpected);
+  assert.strictEqual(verification.isMudp, true);
+  assert.strictEqual(verification.discussionIdentifier, legacyIdentifier);
+  assert.strictEqual(verification.url, url);
+  assert.strictEqual(verification.userComment, 'A comment on');
 });
 
 test('parseAndVerifyMudpPost - rejects non-MUDP status', () => {

@@ -1,13 +1,13 @@
 /**
  * Mastodon URL Discussion Protocol (MUDP) - Mastodon API Client
- * Implements RFC-MUDP-0001 Section 9 (Discovery) & Section 10 (Local Discovery)
+ * Implements RFC-MUDP-0002 Section 9 (Discovery) & Section 10 (Local Discovery)
  */
 
 import { formatMudpPost, parseAndVerifyMudpPost } from './post.js';
 import { generateDiscussionIdentifier } from './identifier.js';
 
 export const DEFAULT_INSTANCE = '';
-export const DEFAULT_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes (RFC-MUDP-0001 Section 11: 15–60 minute TTL)
+export const DEFAULT_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes (RFC-MUDP-0002 Section 11: 15–60 minute TTL)
 
 // In-memory discussion cache: Map<string, { timestamp: number, data: Object }>
 const discussionCache = new Map();
@@ -93,7 +93,7 @@ export function normalizeInstance(input) {
 
 /**
  * Fetches discussions for a given canonical URL or discussion identifier from a Mastodon instance.
- * Implements client-side caching per RFC-MUDP-0001 Section 11.
+ * Implements client-side caching per RFC-MUDP-0002 Section 11.
  *
  * @param {Object} options
  * @param {string} [options.url] - The canonical URL.

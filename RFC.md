@@ -1,11 +1,11 @@
-# RFC-MUDP-0001
+# RFC-MUDP-0002
 
 # Mastodon URL Discussion Protocol (MUDP)
 
-**Version:** 0.1.1 Draft
+**Version:** 0.2.0 Draft
 **Status:** Experimental
 **Pronunciation:** "Mudpie"
-**Date:** 2026-06-04
+**Date:** 2026-11-10
 
 ---
 
@@ -235,12 +235,26 @@ Example Input:
 
 1. Compute SHA-256 digest of the normalized UTF-8 string.
 2. Extract the first 9 bytes (72 bits) of the digest.
-3. Encode the 9 bytes using URL-safe Base64 without padding (RFC 4648 §5).
+3. Encode the 9 bytes using hashtag-safe Base64 without padding (using characters `[A-Za-z0-9_]`, replacing any hyphen `-` with an underscore `_`).
+
+### Hashtag Character Safety & Fediverse Compatibility
+
+In Mastodon and Fediverse platforms, hashtags treat hyphens (`-`) as punctuation and word delimiters. Any hashtag containing a hyphen (such as `#MUDP_6FuCdB-oHG8I`) is truncated at the hyphen by Mastodon's hashtag parser, breaking hashtag indexing and rendering the remainder as plain text.
+
+To guarantee that discussion hashtags are parsed as single, complete, clickable hashtags on Mastodon and other Fediverse software, MUDP discussion identifiers MUST NOT contain hyphens (`-`). The 64-character encoding table uses `_` (underscore) for both index 62 and index 63:
+`ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789__`
+
+### Backwards Compatibility
+
+To maintain maximum backwards compatibility with existing posts and implementations:
+- Clients MUST generate new identifiers using exclusively `[A-Za-z0-9_]`.
+- Parsers MUST accept both modern `[A-Za-z0-9_]{12}` and legacy `[A-Za-z0-9_-]{12}` identifiers when parsing statuses and discussion tags.
+- Post verifiers SHOULD treat legacy identifiers containing `-` as equivalent to their modern `_` counterparts (by mapping `-` to `_` during comparison) so that pre-existing posts remain discoverable and verifiable under the unified discussion hashtag.
 
 Example Hash Calculation:
 SHA256("example.org/article")
 -> Raw First 9 Bytes: [0xda, 0x07, 0x26, 0xfc, 0xee, 0x9e, 0x07, 0x6b, 0x15]
--> Base64URL Output:  2gcm_O6eB2sV
+-> Hashtag-Safe Base64 Output: 2gcm_O6eB2sV
 
 Discussion Identifier:
 MUDP_2gcm_O6eB2sV
@@ -319,7 +333,7 @@ The order of hashtags is implementation-defined.
 To discover comments associated with a URL:
 
 1. Normalize URL.
-2. Generate SHA-256 digest and 72-bit Base64URL discussion hash.
+2. Generate SHA-256 digest and 72-bit hashtag-safe Base64 discussion hash.
 3. Construct discussion hashtag.
 4. Query Mastodon hashtag search.
 
@@ -417,7 +431,7 @@ Unlisted, followers-only, or direct posts are not indexed or discoverable in pub
 
 # 13. Collision Handling
 
-MUDP uses the first 9 bytes (72 bits) of the SHA-256 digest encoded in 12 URL-safe Base64 characters without padding (RFC 4648 §5).
+MUDP uses the first 9 bytes (72 bits) of the SHA-256 digest encoded in 12 hashtag-safe Base64 characters without padding.
 
 This provides 72 bits of collision safety.
 
@@ -487,7 +501,7 @@ MUDP intentionally uses hashtags because:
 A URL hash is used rather than the URL itself because:
 
 - Hashtags are indexed more efficiently than arbitrary text.
-- 72-bit Base64URL encoding keeps tags compact (12 characters, 17 characters total with `#MUDP_` prefix).
+- 72-bit hashtag-safe Base64 encoding (using `[A-Za-z0-9_]`, avoiding hyphens `-` which break Mastodon hashtag parsing) keeps tags compact (12 characters, 17 characters total with `#MUDP_` prefix).
 - Different URL lengths produce a fixed-size identifier.
 - Search performance is predictable.
 - Protocol stripping ensures HTTP and HTTPS variants map deterministically to the exact same discussion index.
@@ -528,7 +542,7 @@ SHA-256 (First 9 Bytes):
 
 [0xc3, 0xbd, 0x01, 0x0d, 0x6c, 0xb2, 0x59, 0x8a, 0x7a]
 
-Base64URL Output:
+Hashtag-Safe Base64 Output:
 
 w70BDWyyWYp6
 

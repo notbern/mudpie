@@ -1,6 +1,6 @@
 /**
  * Mastodon URL Discussion Protocol (MUDP) - Identifier Module
- * Implements RFC-MUDP-0001 Section 6 (Discussion Identifier Generation) & Section 7 (Hashtag Namespace)
+ * Implements RFC-MUDP-0002 Section 6 (Discussion Identifier Generation) & Section 7 (Hashtag Namespace)
  */
 
 import { normalizeUrl } from './url.js';
@@ -10,10 +10,11 @@ import { normalizeUrl } from './url.js';
  */
 export const PROTOCOL_HASHTAG = '#MUDP';
 export const PROTOCOL_PREFIX = 'MUDP_';
-export const IDENTIFIER_LENGTH = 12; // 72-bit Base64URL string (12 chars)
-export const IDENTIFIER_REGEX = /^#?MUDP_([A-Za-z0-9_-]{12})$/i;
+export const IDENTIFIER_LENGTH = 12; // 72-bit hashtag-safe Base64 string (12 chars)
+export const IDENTIFIER_REGEX = /^#?MUDP_([A-Za-z0-9_]{12})$/i;
+export const LEGACY_IDENTIFIER_REGEX = /^#?MUDP_([A-Za-z0-9_-]{12})$/i;
 
-const BASE64URL_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+const BASE64URL_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789__';
 
 /**
  * Encodes a byte array or Uint8Array into URL-safe Base64 without padding (RFC 4648 §5).
@@ -158,6 +159,6 @@ export function getDiscussionHashtag(identifier) {
  */
 export function parseDiscussionIdentifier(input) {
   if (!input || typeof input !== 'string') return null;
-  const match = input.trim().match(IDENTIFIER_REGEX);
+  const match = input.trim().match(IDENTIFIER_REGEX) || input.trim().match(LEGACY_IDENTIFIER_REGEX);
   return match ? match[1] : null;
 }
