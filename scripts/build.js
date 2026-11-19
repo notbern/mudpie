@@ -475,13 +475,6 @@ function buildFirefoxExtension(options = {}) {
     fs.copyFileSync(unversionedXpi, versionedXpi);
     verifyPackage(versionedZip);
     verifyPackage(versionedXpi);
-
-    const vZip = path.join(distDir, `mudpie-firefox-v${cleanVer}.zip`);
-    const vXpi = path.join(distDir, `mudpie-firefox-v${cleanVer}.xpi`);
-    if (!fs.existsSync(vZip)) fs.copyFileSync(unversionedZip, vZip);
-    if (!fs.existsSync(vXpi)) fs.copyFileSync(unversionedXpi, vXpi);
-    verifyPackage(vZip);
-    verifyPackage(vXpi);
   }
 }
 
@@ -514,10 +507,6 @@ function buildChromeExtension(options = {}) {
     const versionedZip = path.join(distDir, `mudpie-chrome-${cleanVer}.zip`);
     fs.copyFileSync(unversionedZip, versionedZip);
     verifyPackage(versionedZip);
-
-    const vZip = path.join(distDir, `mudpie-chrome-v${cleanVer}.zip`);
-    if (!fs.existsSync(vZip)) fs.copyFileSync(unversionedZip, vZip);
-    verifyPackage(vZip);
   }
 }
 

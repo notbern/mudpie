@@ -19,8 +19,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Build container and verify test suite
+      - name: Run build and test suite
         run: |
-          podman build -t mudpie:ci .
-          podman run --rm mudpie:ci npm test
-          podman run --rm mudpie:ci npm run build
+          make test
+          make build

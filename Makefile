@@ -25,7 +25,7 @@ image:
 
 build: clean image test version
 	mkdir -p dist
-	$(PODMAN) run --rm -v $(CURDIR)/dist:/app/dist:Z $(IMAGE_NAME):$(IMAGE_TAG) node scripts/build.js
+	$(PODMAN) run --rm -v $(CURDIR):/app:Z $(IMAGE_NAME):$(IMAGE_TAG) node scripts/build.js
 
 test: image
 	$(PODMAN) run --rm $(IMAGE_NAME):$(IMAGE_TAG) node --test tests/*.test.js

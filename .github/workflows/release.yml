@@ -21,22 +21,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Build container and verify test suite
+      - name: Build and verify packages via Make
         run: |
-          podman build -t mudpie:ci .
-          podman run --rm mudpie:ci npm test
-
-      - name: Build packages inside container
-        run: |
-          mkdir -p dist
-          podman run --rm -v ${{ github.workspace }}/dist:/app/dist:Z mudpie:ci node scripts/build.js
+          make build VERSION=${{ github.ref_name }}
 
       - name: Create GitHub Release and Upload Packages
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/*.zip
-            dist/*.xpi
+            dist/*-[0-9]*.zip
+            dist/*-[0-9]*.xpi
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
