@@ -2,13 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { buildAll, verifyPackage } from '../scripts/build.js';
+import { buildAll, getVersion, verifyPackage } from '../scripts/build.js';
 
 const ROOT_DIR = process.cwd();
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
 
 test('Package Build - Generates valid Firefox and Chrome extension packages', () => {
   buildAll();
+  const version = getVersion(ROOT_DIR);
+  const cleanVer = version.startsWith('v') ? version.slice(1) : version;
 
   const firefoxXpi = path.join(DIST_DIR, 'mudpie-firefox.xpi');
   const firefoxZip = path.join(DIST_DIR, 'mudpie-firefox.zip');
@@ -21,6 +23,19 @@ test('Package Build - Generates valid Firefox and Chrome extension packages', ()
   assert.ok(verifyPackage(firefoxXpi), 'mudpie-firefox.xpi must pass package verification');
   assert.ok(verifyPackage(firefoxZip), 'mudpie-firefox.zip must pass package verification');
   assert.ok(verifyPackage(chromeZip), 'mudpie-chrome.zip must pass package verification');
+
+  // Verify versioned packages
+  const versionedFirefoxXpi = path.join(DIST_DIR, `mudpie-firefox-${cleanVer}.xpi`);
+  const versionedFirefoxZip = path.join(DIST_DIR, `mudpie-firefox-${cleanVer}.zip`);
+  const versionedChromeZip = path.join(DIST_DIR, `mudpie-chrome-${cleanVer}.zip`);
+
+  assert.ok(fs.existsSync(versionedFirefoxXpi), `mudpie-firefox-${cleanVer}.xpi must exist`);
+  assert.ok(fs.existsSync(versionedFirefoxZip), `mudpie-firefox-${cleanVer}.zip must exist`);
+  assert.ok(fs.existsSync(versionedChromeZip), `mudpie-chrome-${cleanVer}.zip must exist`);
+
+  assert.ok(verifyPackage(versionedFirefoxXpi), 'versioned Firefox xpi must pass package verification');
+  assert.ok(verifyPackage(versionedFirefoxZip), 'versioned Firefox zip must pass package verification');
+  assert.ok(verifyPackage(versionedChromeZip), 'versioned Chrome zip must pass package verification');
 });
 
 test('Package Verification - Rejects corrupted or invalid packages', () => {

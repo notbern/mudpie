@@ -441,9 +441,12 @@ export function verifyPackage(zipPath) {
   return true;
 }
 
-function buildFirefoxExtension() {
+function buildFirefoxExtension(options = {}) {
   console.log('Building Firefox Extension...');
-  const distFirefox = path.join(DIST_DIR, 'firefox');
+  const rootDir = typeof options === 'string' ? ROOT_DIR : (options.rootDir || ROOT_DIR);
+  const version = typeof options === 'string' ? options : (options.version || getVersion(rootDir));
+  const distDir = typeof options === 'object' && options.distDir ? options.distDir : DIST_DIR;
+  const distFirefox = path.join(distDir, 'firefox');
   fs.mkdirSync(distFirefox, { recursive: true });
 
   // Copy manifest & background
@@ -459,13 +462,35 @@ function buildFirefoxExtension() {
   copyDirRecursive(CORE_DIR, path.join(FIREFOX_DIR, 'core', 'src'));
 
   // Package zip and xpi
-  createZip(distFirefox, path.join(DIST_DIR, 'mudpie-firefox.zip'));
-  createZip(distFirefox, path.join(DIST_DIR, 'mudpie-firefox.xpi'));
+  const unversionedZip = path.join(distDir, 'mudpie-firefox.zip');
+  const unversionedXpi = path.join(distDir, 'mudpie-firefox.xpi');
+  createZip(distFirefox, unversionedZip);
+  createZip(distFirefox, unversionedXpi);
+
+  if (version) {
+    const cleanVer = version.startsWith('v') ? version.slice(1) : version;
+    const versionedZip = path.join(distDir, `mudpie-firefox-${cleanVer}.zip`);
+    const versionedXpi = path.join(distDir, `mudpie-firefox-${cleanVer}.xpi`);
+    fs.copyFileSync(unversionedZip, versionedZip);
+    fs.copyFileSync(unversionedXpi, versionedXpi);
+    verifyPackage(versionedZip);
+    verifyPackage(versionedXpi);
+
+    const vZip = path.join(distDir, `mudpie-firefox-v${cleanVer}.zip`);
+    const vXpi = path.join(distDir, `mudpie-firefox-v${cleanVer}.xpi`);
+    if (!fs.existsSync(vZip)) fs.copyFileSync(unversionedZip, vZip);
+    if (!fs.existsSync(vXpi)) fs.copyFileSync(unversionedXpi, vXpi);
+    verifyPackage(vZip);
+    verifyPackage(vXpi);
+  }
 }
 
-function buildChromeExtension() {
+function buildChromeExtension(options = {}) {
   console.log('Building Chrome Extension...');
-  const distChrome = path.join(DIST_DIR, 'chrome');
+  const rootDir = typeof options === 'string' ? ROOT_DIR : (options.rootDir || ROOT_DIR);
+  const version = typeof options === 'string' ? options : (options.version || getVersion(rootDir));
+  const distDir = typeof options === 'object' && options.distDir ? options.distDir : DIST_DIR;
+  const distChrome = path.join(distDir, 'chrome');
   fs.mkdirSync(distChrome, { recursive: true });
 
   // Copy manifest & background
@@ -481,7 +506,19 @@ function buildChromeExtension() {
   copyDirRecursive(CORE_DIR, path.join(CHROME_DIR, 'core', 'src'));
 
   // Package zip
-  createZip(distChrome, path.join(DIST_DIR, 'mudpie-chrome.zip'));
+  const unversionedZip = path.join(distDir, 'mudpie-chrome.zip');
+  createZip(distChrome, unversionedZip);
+
+  if (version) {
+    const cleanVer = version.startsWith('v') ? version.slice(1) : version;
+    const versionedZip = path.join(distDir, `mudpie-chrome-${cleanVer}.zip`);
+    fs.copyFileSync(unversionedZip, versionedZip);
+    verifyPackage(versionedZip);
+
+    const vZip = path.join(distDir, `mudpie-chrome-v${cleanVer}.zip`);
+    if (!fs.existsSync(vZip)) fs.copyFileSync(unversionedZip, vZip);
+    verifyPackage(vZip);
+  }
 }
 
 function minifyJsForBookmarklet(code) {
@@ -543,8 +580,8 @@ export function buildAll(options = {}) {
     syncVersions(version, rootDir);
   }
   fs.mkdirSync(DIST_DIR, { recursive: true });
-  buildFirefoxExtension();
-  buildChromeExtension();
+  buildFirefoxExtension({ rootDir, version, distDir: DIST_DIR });
+  buildChromeExtension({ rootDir, version, distDir: DIST_DIR });
   buildBookmarklets();
 }
 

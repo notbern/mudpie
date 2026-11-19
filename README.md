@@ -122,10 +122,12 @@ podman run --rm -v $(pwd)/dist:/app/dist:Z mudpie:latest node scripts/build.js
 podman run --rm mudpie:latest node --test tests/*.test.js
 ```
 
-Generates ready-to-distribute packages in `dist/`:
-- `dist/mudpie-firefox.zip` and `dist/mudpie-firefox.xpi`
-- `dist/mudpie-chrome.zip`
+Generates ready-to-distribute generic and versioned packages in `dist/`:
+- `dist/mudpie-firefox.zip`, `dist/mudpie-firefox.xpi` (and versioned `dist/mudpie-firefox-<version>.zip`, `dist/mudpie-firefox-<version>.xpi`)
+- `dist/mudpie-chrome.zip` (and versioned `dist/mudpie-chrome-<version>.zip`)
 - `packages/bookmarklets/README.md` (bookmarklet JS URLs)
+
+When git version tags (e.g. `v0.2.0`) are pushed, the GitHub Actions release workflow automatically packages and publishes all versioned `.zip` and `.xpi` assets via GitHub Releases.
 
 ---
 
